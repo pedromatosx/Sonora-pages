@@ -44,3 +44,15 @@ jobs:
       - name: Deploy GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify live public website
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -eu
+          echo "Checking $SITE_URL"
+          curl --fail --silent --show-error --location --retry 12 --retry-delay 5 --retry-all-errors "$SITE_URL" -o /tmp/sonora-live.html
+          grep -q 'Sua música começa aqui' /tmp/sonora-live.html
+          curl --fail --silent --show-error --location "$SITE_URL"'src/core.mjs' -o /tmp/sonora-core.mjs
+          grep -q 'transposeChord' /tmp/sonora-core.mjs
+          curl --fail --silent --show-error --location "$SITE_URL"'manifest.webmanifest' -o /tmp/sonora-manifest.json
+          grep -q 'Sonora' /tmp/sonora-manifest.json
