@@ -23,3 +23,6 @@ jobs:
           test -s styles.css
           test -s src/app.mjs
           grep -q 'id="app"' index.html
+
+      - name: Smoke test em Chrome headless
+        run: node scripts/browser-smoke.mjs
