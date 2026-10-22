@@ -40,5 +40,10 @@ try {
   assert.match(reader,/class="chord">C</);
   const search = await render("#descobrir");
   assert.match(search,/Explore cifras/);
+  const practice = await render("#ferramentas","390,844");
+  assert.match(practice,/Ferramentas musicais/);
+  assert.match(practice,/Metrônomo/);
+  assert.match(practice,/Dicionário de acordes/);
+  assert.match(practice,/Notas de afinação/);
   console.log("Chrome headless: home, leitor e descoberta renderizados com sucesso.");
 } finally {await new Promise(done=>server.close(done));}
