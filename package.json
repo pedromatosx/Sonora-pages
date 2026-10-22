@@ -1,0 +1,12 @@
+{
+  "name": "sonora",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Plataforma de cifras e estudos musicais",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check src/music.mjs && node --check src/catalog.mjs && node --check src/app.mjs && npm test"
+  },
+  "engines": {"node": ">=20"}
+}

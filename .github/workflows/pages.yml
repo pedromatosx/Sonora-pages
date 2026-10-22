@@ -1,18 +1,15 @@
-name: Publish Sonora
+name: Publicar Sonora
 on:
   push:
     branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
   pages: write
   id-token: write
-
 concurrency:
-  group: github-pages
+  group: sonora-pages
   cancel-in-progress: true
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -20,39 +17,31 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout public site
-        uses: actions/checkout@v4
-      - name: Verify static assets
-        run: |
-          test -s index.html
-          test -s src/core.mjs
-          test -s manifest.webmanifest
-          test -s sw.js
-          test -s icon.svg
-      - name: Prepare public site
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validar site
+        run: npm run check
+      - name: Preparar arquivos públicos
         run: |
           mkdir -p _site/src
-          cp index.html manifest.webmanifest icon.svg sw.js _site/
-          cp src/core.mjs _site/src/core.mjs
+          cp index.html styles.css icon.svg _site/
+          cp src/app.mjs src/music.mjs src/catalog.mjs _site/src/
           touch _site/.nojekyll
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-      - name: Upload only public site assets
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-      - name: Deploy GitHub Pages
+      - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
-      - name: Verify live public website
+      - name: Verificar HTTP
         env:
           SITE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
           set -eu
-          echo "Checking $SITE_URL"
-          curl --fail --silent --show-error --location --retry 12 --retry-delay 5 --retry-all-errors "$SITE_URL" -o /tmp/sonora-live.html
-          grep -q 'Sua música começa aqui' /tmp/sonora-live.html
-          curl --fail --silent --show-error --location "$SITE_URL"'src/core.mjs' -o /tmp/sonora-core.mjs
-          grep -q 'transposeChord' /tmp/sonora-core.mjs
-          curl --fail --silent --show-error --location "$SITE_URL"'manifest.webmanifest' -o /tmp/sonora-manifest.json
-          grep -q 'Sonora' /tmp/sonora-manifest.json
+          curl -fsSL --retry 6 --retry-delay 4 "$SITE_URL" -o /tmp/sonora.html
+          grep -q 'Sonora — Seu som' /tmp/sonora.html
+          curl -fsSL "$SITE_URL"src/app.mjs -o /tmp/sonora-app.mjs
+          grep -q 'render()' /tmp/sonora-app.mjs

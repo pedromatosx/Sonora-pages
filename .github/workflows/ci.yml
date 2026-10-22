@@ -1,0 +1,28 @@
+name: Verificar Sonora
+on:
+  push:
+    branches: ["main", "rebuild/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verificar sintaxe e testes
+        run: npm run check
+      - name: Verificar arquivos de interface
+        run: |
+          test -s index.html
+          test -s styles.css
+          test -s src/app.mjs
+          grep -q 'id="app"' index.html
+
+      - name: Smoke test em Chrome headless
+        run: node scripts/browser-smoke.mjs
