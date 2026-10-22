@@ -10,7 +10,7 @@ const state = {
   userSongs: read("songs", []).filter(s => s && typeof s.id === "string" && !validateSong(s)).slice(0,100),
   favorites: read("favorites", []).filter?.(v => typeof v === "string") ?? [],
   lists: read("lists", []).filter?.(v => v && typeof v.id === "string" && typeof v.name === "string" && Array.isArray(v.songs)) ?? [],
-  query:"", genre:"Todos", semitones:0, font:19, scrollTimer:null, speed:2, pendingSong:null
+  query:"", genre:"Todos", semitones:0, font:19, scrollTimer:null, speed:2, pendingSong:null, editingId:null
 };
 const save = (key,value) => { try { localStorage.setItem(KEY + key,JSON.stringify(value)); return true; } catch { showToast("Armazenamento indisponível. Libere espaço no navegador."); return false; } };
 const allSongs = () => [...demoSongs, ...state.userSongs];
@@ -92,7 +92,7 @@ function reader(song) {
       '<button class="tool-btn'+(state.scrollTimer?' active':'')+'" data-action="scroll" aria-pressed="'+Boolean(state.scrollTimer)+'">'+(state.scrollTimer?"◼ Parar rolagem":"▶ Rolar")+'</button>'+
       '<span class="grow"></span><button class="tool-btn" data-action="print">⎙ Imprimir</button></div>'+
       '<div class="reader-body" id="lyric-body" style="font-size:'+state.font+'px">'+song.body.split("\n").map(lyricLine).join("")+'</div></div>'+
-      '<aside class="reader-aside"><div class="info-panel"><h3>Sobre esta cifra</h3><div class="info-row"><span>Tom original</span><strong>'+esc(song.key)+'</strong></div><div class="info-row"><span>Dificuldade</span><strong>'+esc(song.level||"—")+'</strong></div><div class="info-row"><span>Estilo</span><strong>'+esc(song.genre)+'</strong></div><div class="info-row"><span>Andamento</span><strong>'+(Number.isFinite(song.bpm)?song.bpm+" BPM":"—")+'</strong></div><button class="btn '+(fav?'btn-accent':'btn-outline')+'" data-action="favorite" data-id="'+esc(song.id)+'">'+(fav?"♥ Salvo nos favoritos":"♡ Salvar favorito")+'</button><button class="btn btn-outline" data-action="add-to-list" data-id="'+esc(song.id)+'">＋ Adicionar ao repertório</button></div>'+
+      '<aside class="reader-aside"><div class="info-panel"><h3>Sobre esta cifra</h3><div class="info-row"><span>Tom original</span><strong>'+esc(song.key)+'</strong></div><div class="info-row"><span>Dificuldade</span><strong>'+esc(song.level||"—")+'</strong></div><div class="info-row"><span>Estilo</span><strong>'+esc(song.genre)+'</strong></div><div class="info-row"><span>Andamento</span><strong>'+(Number.isFinite(song.bpm)?song.bpm+" BPM":"—")+'</strong></div><button class="btn '+(fav?'btn-accent':'btn-outline')+'" data-action="favorite" data-id="'+esc(song.id)+'">'+(fav?"♥ Salvo nos favoritos":"♡ Salvar favorito")+'</button><button class="btn btn-outline" data-action="add-to-list" data-id="'+esc(song.id)+'">＋ Adicionar ao repertório</button>'+(song.id.startsWith("local-") ? '<button class="btn btn-outline" data-action="edit-song" data-id="'+esc(song.id)+'">✎ Editar cifra</button><button class="btn btn-outline" data-action="delete-song" data-id="'+esc(song.id)+'">Excluir cifra</button>' : "")+'</div>'+
       '<div class="info-panel"><h3>Acordes nesta música</h3><div class="chord-chips">'+(uniqueChords.map(c => '<span class="chord-chip">'+esc(c)+'</span>').join("")||'<span class="hint">Sem acordes identificados</span>')+'</div><p class="hint" style="margin-top:15px">Use + e − para transpor cada acorde em meio tom.</p></div></aside></div>';
 }
 function render() {
@@ -127,7 +127,20 @@ document.addEventListener("click",event=>{
   const btn=event.target.closest("[data-action]");
   if(!btn)return;
   const action=btn.dataset.action; const id=btn.dataset.id;
-  if(action==="new-song"){openDialog("song-dialog");return;}
+  if(action==="new-song"){state.editingId=null;byId("song-form").reset();byId("song-dialog-title").textContent="Adicionar cifra";openDialog("song-dialog");return;}
+  if(action==="edit-song"){
+    const song=state.userSongs.find(s=>s.id===id);if(!song)return;
+    state.editingId=id;byId("song-dialog-title").textContent="Editar cifra";
+    for(const key of ["title","artist","genre","key","body"])byId("song-"+key).value=song[key];
+    openDialog("song-dialog");return;
+  }
+  if(action==="delete-song" && confirm("Excluir esta cifra local? Esta ação não pode ser desfeita.")){
+    state.userSongs=state.userSongs.filter(s=>s.id!==id);
+    state.favorites=state.favorites.filter(v=>v!==id);
+    state.lists.forEach(l=>l.songs=l.songs.filter(v=>v!==id));
+    save("songs",state.userSongs);save("favorites",state.favorites);save("lists",state.lists);
+    location.hash="#minhas";showToast("Cifra excluída.");return;
+  }
   if(action==="new-list"){openDialog("list-dialog");return;}
   if(action==="genre"){state.genre=btn.dataset.genre;render();return;}
   if(action==="favorite"){
@@ -161,12 +174,17 @@ byId("search-input").addEventListener("input",event=>{
 });
 byId("song-form").addEventListener("submit",event=>{
   event.preventDefault();const form=new FormData(event.target);
-  const song={id:"local-"+Date.now().toString(36),title:String(form.get("title")||"").trim(),artist:String(form.get("artist")||"").trim(),genre:String(form.get("genre")||"Outros"),key:String(form.get("key")||"C"),body:String(form.get("body")||"").trim(),level:"Personalizada",bpm:null,cover:"🎵",color:"#B5787C"};
+  const song={id:state.editingId || "local-"+Date.now().toString(36),title:String(form.get("title")||"").trim(),artist:String(form.get("artist")||"").trim(),genre:String(form.get("genre")||"Outros"),key:String(form.get("key")||"C"),body:String(form.get("body")||"").trim(),level:"Personalizada",bpm:null,cover:"🎵",color:"#B5787C"};
   const error=validateSong(song);if(error){showToast(error);return;}
-  if(state.userSongs.length>=100){showToast("Limite de 100 cifras locais atingido.");return;}
-  state.userSongs.push(song);
-  if(!save("songs",state.userSongs)){state.userSongs.pop();return;}
-  byId("song-dialog").close();event.target.reset();state.semitones=0;location.hash="#musica/"+song.id;showToast("Sua cifra foi salva neste navegador!");
+  const existing=state.userSongs.findIndex(s=>s.id===state.editingId);
+  if(existing<0 && state.userSongs.length>=100){showToast("Limite de 100 cifras locais atingido.");return;}
+  const snapshot=[...state.userSongs];
+  if(existing>=0)state.userSongs[existing]=song;else state.userSongs.push(song);
+  if(!save("songs",state.userSongs)){state.userSongs=snapshot;return;}
+  state.editingId=null;byId("song-dialog").close();event.target.reset();state.semitones=0;
+  const next="#musica/"+song.id;
+  if(location.hash===next)render();else location.hash=next;
+  showToast("Sua cifra foi salva neste navegador!");
 });
 byId("list-form").addEventListener("submit",event=>{
   event.preventDefault();const name=String(new FormData(event.target).get("name")||"").trim();
