@@ -7,7 +7,7 @@ test("interface renderiza catálogo, leitor, transposição e escapa conteúdo l
     if (!elements.has(id)) elements.set(id,{
       innerHTML:"", textContent:"", value:"", dataset:{},
       classList:{add(){},remove(){},toggle(){}},
-      addEventListener(){}, showModal(){},close(){},reset(){}
+      addEventListener(){},setAttribute(){}, showModal(){},close(){},reset(){}
     });
     return elements.get(id);
   };

@@ -1,5 +1,6 @@
 import {songs as demoSongs} from "./catalog.mjs";
 import {transposeChord, normalizeSearch, searchSongs, validateSong, extractChords} from "./music.mjs";
+import {GUITAR_CHORDS,GUITAR_TUNING,parseBpm,beatIntervalMs,tuningNote} from "./practice.mjs";
 
 const KEY = "sonora_v2_";
 const app = document.querySelector("#app");
@@ -10,7 +11,7 @@ const state = {
   userSongs: read("songs", []).filter(s => s && typeof s.id === "string" && !validateSong(s)).slice(0,100),
   favorites: read("favorites", []).filter?.(v => typeof v === "string") ?? [],
   lists: read("lists", []).filter?.(v => v && typeof v.id === "string" && typeof v.name === "string" && Array.isArray(v.songs)) ?? [],
-  query:"", genre:"Todos", semitones:0, font:19, scrollTimer:null, speed:2, pendingSong:null, editingId:null
+  query:"", genre:"Todos", semitones:0, font:19, scrollTimer:null, speed:2, pendingSong:null, editingId:null, practiceBpm:88, chordQuery:""
 };
 const save = (key,value) => { try { localStorage.setItem(KEY + key,JSON.stringify(value)); return true; } catch { showToast("Armazenamento indisponível. Libere espaço no navegador."); return false; } };
 const allSongs = () => [...demoSongs, ...state.userSongs];
@@ -95,6 +96,72 @@ function reader(song) {
       '<aside class="reader-aside"><div class="info-panel"><h3>Sobre esta cifra</h3><div class="info-row"><span>Tom original</span><strong>'+esc(song.key)+'</strong></div><div class="info-row"><span>Dificuldade</span><strong>'+esc(song.level||"—")+'</strong></div><div class="info-row"><span>Estilo</span><strong>'+esc(song.genre)+'</strong></div><div class="info-row"><span>Andamento</span><strong>'+(Number.isFinite(song.bpm)?song.bpm+" BPM":"—")+'</strong></div><button class="btn '+(fav?'btn-accent':'btn-outline')+'" data-action="favorite" data-id="'+esc(song.id)+'">'+(fav?"♥ Salvo nos favoritos":"♡ Salvar favorito")+'</button><button class="btn btn-outline" data-action="add-to-list" data-id="'+esc(song.id)+'">＋ Adicionar ao repertório</button>'+(song.id.startsWith("local-") ? '<button class="btn btn-outline" data-action="edit-song" data-id="'+esc(song.id)+'">✎ Editar cifra</button><button class="btn btn-outline" data-action="delete-song" data-id="'+esc(song.id)+'">Excluir cifra</button>' : "")+'</div>'+
       '<div class="info-panel"><h3>Acordes nesta música</h3><div class="chord-chips">'+(uniqueChords.map(c => '<span class="chord-chip">'+esc(c)+'</span>').join("")||'<span class="hint">Sem acordes identificados</span>')+'</div><p class="hint" style="margin-top:15px">Use + e − para transpor cada acorde em meio tom.</p></div></aside></div>';
 }
+
+function practicePage() {
+  const chords = GUITAR_CHORDS.filter(c => normalizeSearch(c.name+" "+c.label).includes(normalizeSearch(state.chordQuery)));
+  return pageTitle("ESTUDE NO SEU RITMO","Ferramentas musicais","Pratique com metrônomo, referências de afinação e posições básicas de violão.")+
+    '<div class="practice-grid">'+
+    '<section class="practice-panel"><small class="eyebrow">TEMPO E RITMO</small><h2>Metrônomo</h2><p class="muted">Ajuste a velocidade e pratique com a marcação 4/4.</p>'+
+    '<div class="bpm-controls"><button class="btn btn-outline" data-action="bpm" data-step="-5" aria-label="Diminuir cinco BPM">−5</button><label for="practice-bpm"><input id="practice-bpm" type="number" min="40" max="240" step="1" value="'+state.practiceBpm+'"> BPM</label><button class="btn btn-outline" data-action="bpm" data-step="5" aria-label="Aumentar cinco BPM">+5</button></div>'+
+    '<div class="beat-indicator" aria-live="off"><span>Batida</span><strong id="beat-number">1</strong><span>/ 4</span></div>'+
+    '<button class="btn btn-accent" id="metronome-toggle" data-action="metronome" aria-pressed="'+Boolean(metronomeTimer)+'">'+(metronomeTimer?"■ Parar metrônomo":"▶ Iniciar metrônomo")+'</button><p class="hint">Faixa: 40 a 240 BPM. O áudio só começa quando você toca em Iniciar.</p></section>'+
+    '<section class="practice-panel"><small class="eyebrow">SEIS CORDAS</small><h2>Notas de afinação</h2><p class="muted">Ouça cada nota de referência e afine o instrumento pelo ouvido.</p><div class="tuning-grid">'+
+    GUITAR_TUNING.map(n=>'<button class="tuning-button" data-action="reference-tone" data-pitch="'+n.pitch+'" aria-label="Tocar nota '+n.note+' '+n.pitch+'"><span>'+n.label+' corda</span><strong>'+n.pitch+'</strong><small>'+n.note+'</small><span class="tuning-play">▶ Ouvir</span></button>').join("")+
+    '</div><p class="hint">Esta ferramenta reproduz notas; não escuta o microfone nem mede a afinação.</p></section></div>'+
+    '<div class="section-heading"><div><h2>Dicionário de acordes</h2><p>Posições comuns para violão de seis cordas, afinação padrão.</p></div></div>'+
+    '<label for="chord-search" class="chord-search-label">Buscar acorde <input id="chord-search" type="search" value="'+esc(state.chordQuery)+'" placeholder="Ex.: Am, Sol, F#m" autocomplete="off"></label>'+
+    '<div class="chord-diagram-grid" id="chord-results">'+(chords.map(chordDiagram).join("")||'<div class="empty-state">Nenhum acorde encontrado.</div>')+'</div>';
+}
+function chordDiagram(shape) {
+  const top = shape.frets.map(f=>'<span>'+ (f===-1?'×':f===0?'○':'•') +'</span>').join("");
+  const cells = Array.from({length:5},(_,row)=>shape.frets.map(f=>
+    '<span class="fret-cell">'+(f===row+1?'<i aria-hidden="true"></i>':'')+'</span>').join("")).join("");
+  return '<article class="chord-diagram" aria-label="Acorde '+esc(shape.label)+', casas '+shape.frets.map(v=>v===-1?'não tocar':v===0?'solta':v).join(', ')+'"><div><strong>'+esc(shape.name)+'</strong><p>'+esc(shape.label)+'</p></div><div class="fret-top" aria-hidden="true">'+top+'</div><div class="fret-cells" aria-hidden="true">'+cells+'</div><small>Da 6ª à 1ª corda · × = não tocar · ○ = solta</small></article>';
+}
+let audioContext=null,metronomeTimer=null,currentBeat=0;
+function audio() {
+  const AudioClass=window.AudioContext || window.webkitAudioContext;
+  if(!AudioClass){showToast("Seu navegador não suporta áudio Web Audio.");return null;}
+  try {
+    if(!audioContext) audioContext=new AudioClass();
+    if(audioContext.state==="suspended")audioContext.resume().catch(()=>showToast("O áudio foi bloqueado. Toque novamente."));
+    return audioContext;
+  } catch {showToast("Não foi possível ativar o áudio.");return null;}
+}
+function playTone(frequency,duration=0.1,volume=0.2) {
+  const ctx=audio(); if(!ctx)return false;
+  try {
+    const oscillator=ctx.createOscillator(),gain=ctx.createGain(),now=ctx.currentTime;
+    oscillator.type="sine";oscillator.frequency.value=frequency;
+    gain.gain.setValueAtTime(volume,now);
+    gain.gain.exponentialRampToValueAtTime(0.001,now+duration);
+    oscillator.connect(gain).connect(ctx.destination);
+    oscillator.start(now);oscillator.stop(now+duration+0.01);
+    return true;
+  } catch {showToast("Não foi possível reproduzir esta nota.");return false;}
+}
+function stopMetronome() {
+  if(metronomeTimer) clearInterval(metronomeTimer);
+  metronomeTimer=null;currentBeat=0;
+  const button=document.getElementById("metronome-toggle");
+  if(button){button.textContent="▶ Iniciar metrônomo";button.setAttribute("aria-pressed","false");}
+}
+function metronomeBeat(){
+  currentBeat=(currentBeat%4)+1;
+  playTone(currentBeat===1?1000:640,0.055,currentBeat===1?0.28:0.16);
+  const beat=document.getElementById("beat-number");if(beat)beat.textContent=String(currentBeat);
+}
+function toggleMetronome(){
+  if(metronomeTimer){stopMetronome();return;}
+  const bpm=parseBpm(state.practiceBpm);
+  if(bpm===null){showToast("Informe um BPM entre 40 e 240.");return;}
+  if(!audio())return;
+  metronomeBeat();
+  metronomeTimer=setInterval(metronomeBeat,beatIntervalMs(bpm));
+  const btn=document.getElementById("metronome-toggle");
+  if(btn){btn.textContent="■ Parar metrônomo";btn.setAttribute("aria-pressed","true");}
+}
+
 function render() {
   const current=route(); const [page,id] = current.split("/");
   document.querySelectorAll("[data-nav]").forEach(link => link.classList.toggle("active",link.dataset.nav === (page === "musica" ? "descobrir" : page === "repertorio" ? "repertorios" : page)));
@@ -104,6 +171,7 @@ function render() {
   else if(page==="repertorios")app.innerHTML=setlists();
   else if(page==="repertorio")app.innerHTML=setlistDetail(id);
   else if(page==="minhas")app.innerHTML=mySongs();
+  else if(page==="ferramentas")app.innerHTML=practicePage();
   else app.innerHTML=home();
   document.title = (page==="musica" && findSong(id) ? findSong(id).title+" — " : "")+"Sonora — Seu som, seu ritmo.";
 }
@@ -142,6 +210,9 @@ document.addEventListener("click",event=>{
     location.hash="#minhas";showToast("Cifra excluída.");return;
   }
   if(action==="new-list"){openDialog("list-dialog");return;}
+  if(action==="bpm"){const next=Math.max(40,Math.min(240,state.practiceBpm+Number(btn.dataset.step)));state.practiceBpm=next;stopMetronome();render();return;}
+  if(action==="metronome"){toggleMetronome();return;}
+  if(action==="reference-tone"){const note=tuningNote(btn.dataset.pitch);if(note)playTone(note.frequency,1.4,0.19);return;}
   if(action==="genre"){state.genre=btn.dataset.genre;render();return;}
   if(action==="favorite"){
     state.favorites = state.favorites.includes(id)?state.favorites.filter(v=>v!==id):[...state.favorites,id];
@@ -163,6 +234,20 @@ document.addEventListener("click",event=>{
 byId("global-search").addEventListener("submit",event=>{
   event.preventDefault();state.query=byId("search-input").value.trim();state.genre="Todos";
   if(route()!=="descobrir")location.hash="#descobrir";else render();
+});
+document.addEventListener("change",event=>{
+  if(event.target.id==="practice-bpm"){
+    const bpm=parseBpm(event.target.value);
+    if(bpm===null){showToast("Use um valor de 40 a 240 BPM.");event.target.value=state.practiceBpm;return;}
+    state.practiceBpm=bpm;stopMetronome();render();
+  }
+});
+document.addEventListener("input",event=>{
+  if(event.target.id==="chord-search"){
+    state.chordQuery=event.target.value;
+    const results=document.getElementById("chord-results");
+    if(results)results.innerHTML=GUITAR_CHORDS.filter(c=>normalizeSearch(c.name+" "+c.label).includes(normalizeSearch(state.chordQuery))).map(chordDiagram).join("")||'<div class="empty-state">Nenhum acorde encontrado.</div>';
+  }
 });
 byId("search-input").addEventListener("input",event=>{
   state.query=event.target.value;
@@ -201,5 +286,5 @@ byId("add-form").addEventListener("submit",event=>{
   save("lists",state.lists);byId("add-dialog").close();showToast("Música adicionada ao repertório.");
 });
 document.addEventListener("keydown",event=>{if(event.key==="/"&&!["INPUT","TEXTAREA"].includes(document.activeElement?.tagName)&&!document.querySelector("dialog[open]")){event.preventDefault();byId("search-input").focus();}});
-window.addEventListener("hashchange",()=>{stopScroll();state.semitones=0;render();window.scrollTo(0,0);});
+window.addEventListener("hashchange",()=>{stopMetronome();stopScroll();state.semitones=0;render();window.scrollTo(0,0);});
 render();
