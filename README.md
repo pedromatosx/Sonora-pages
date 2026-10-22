@@ -1,13 +1,11 @@
-# Sonora — site público
+# Sonora — distribuição pública (pré-publicação)
 
-Este repositório contém somente os arquivos estáticos publicados do Sonora.
+Frontend estático do projeto Sonora. Este repositório contém somente o site e seus testes, sem credenciais nem conteúdo protegido de terceiros.
 
-- Site previsto: https://pedromatosx.github.io/Sonora-pages/
-- Código-fonte e planejamento: repositório privado `pedromatosx/Sonora`
-- Este repositório não contém segredos, banco de dados ou arquivos de desenvolvimento.
+## Rodar
 
-## Publicação
-Em **Settings → Pages**, escolha **Deploy from a branch**, branch `main`, pasta `/(root)`, e salve. O GitHub Pages publicará `index.html`.
+`python3 -m http.server 8000` e acesse `http://localhost:8000`.
 
-## Limites atuais
-Protótipo com duas composições demonstrativas e busca externa; não há catálogo comercial incorporado.
+`npm run check` testa regras musicais e sintaxe.
+
+Os commits da branch `rebuild/sonora-v2` não são publicação automática. A atualização de `main` aciona o workflow GitHub Pages. A publicação depende de autorização explícita.

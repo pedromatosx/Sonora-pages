@@ -1,44 +1,76 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1424"><meta name="description" content="Sonora: cifras, repertórios e ferramentas musicais"><link rel="manifest" href="./manifest.webmanifest"><title>Sonora — Sua música começa aqui</title><style>
-:root{font:16px/1.5 system-ui,-apple-system,sans-serif;color:#ecf5ff;background:#0b1424;--surface:#15243a;--border:#30445b;--mint:#75e5c8}*{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}button{cursor:pointer;color:inherit;border:1px solid var(--border);background:#243650;border-radius:10px;padding:10px 14px}button:hover,button:focus-visible{border-color:var(--mint)}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--mint);outline-offset:2px}.primary{background:var(--mint);color:#071b20;font-weight:750;border-color:var(--mint)}header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding:17px max(4vw,18px);border-bottom:1px solid var(--border)}.brand{font-size:26px;font-weight:850;color:var(--mint);text-decoration:none}nav{display:flex;flex-wrap:wrap;gap:6px}nav button{border:0;background:transparent}nav button.active{color:var(--mint);background:#1b3544}main{max-width:1080px;margin:auto;padding:36px 18px 80px}h1{font-size:clamp(32px,5vw,54px);line-height:1.13;letter-spacing:-1.5px;margin:0 0 12px}h2{margin-top:28px}p{margin:8px 0}.muted{color:#b0bfd1}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.card,.panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px}.card h3{margin:6px 0}.row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.row>*{min-width:0}.search{display:flex;gap:8px;margin:24px 0}.search input{flex:1;min-width:0}input,select,textarea{background:#0d1a2b;border:1px solid #466079;border-radius:10px;padding:12px;color:#fff;max-width:100%}textarea{width:100%;min-height:180px}label{display:block;margin:12px 0 5px;font-weight:650}.screen[hidden]{display:none!important}.chip{display:inline-block;color:var(--mint);border:1px solid #326a65;border-radius:20px;padding:2px 9px;font-size:12px}.reader{margin-top:20px}.sheet{font:18px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;padding:18px;background:#0d192a;border-radius:12px}.chords{color:var(--mint);font-weight:750}.notice{background:#153042;border-left:4px solid var(--mint);padding:13px;border-radius:8px;margin:20px 0}.hidden{display:none}.small{font-size:13px}.stat{font-size:32px;font-weight:800;color:var(--mint)}footer{margin-top:44px;border-top:1px solid var(--border);padding-top:20px;color:#aebdd0}.meter{display:flex;align-items:center;justify-content:center;width:100px;height:100px;border:4px solid var(--mint);border-radius:50%;font-size:28px;margin:20px auto}.meter.on{background:#214c48}input[type=range]{padding:0;accent-color:var(--mint)}@media(max-width:600px){header{justify-content:center}nav{justify-content:center}.search{flex-direction:column}.card,.panel{padding:16px}.sheet{font-size:16px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important}}
-</style></head><body><header><a class="brand" href="#inicio" aria-label="Sonora início">♫ sonora.</a><nav aria-label="Navegação principal"><button data-page="inicio" class="active">Início</button><button data-page="biblioteca">Biblioteca</button><button data-page="repertorios">Repertórios</button><button data-page="ferramentas">Ferramentas</button><button data-page="contribuir">Contribuir</button></nav></header><main>
-<section class="screen" id="inicio"><h1>Sua música começa aqui.</h1><p class="muted">Encontre cifras, ajuste o tom e leve seu repertório para onde quiser.</p><form id="searchForm" class="search"><input id="query" aria-label="Buscar por música ou artista" placeholder="Música, artista ou estilo..." autocomplete="off"><button class="primary" type="submit">Buscar</button></form><div class="notice">O catálogo inicial inclui composições demonstrativas e músicas adicionadas por você. Para outras músicas, a pesquisa externa abre a fonte original, sem copiar letras protegidas.</div><div class="row"><span id="count" class="chip"></span><button id="external" type="button">Buscar cifras na web ↗</button></div><h2>Explorar cifras</h2><div id="catalog" class="grid" aria-live="polite"></div><section id="reader" class="panel reader" hidden><div class="row"><span class="chip">Leitor Sonora</span><button id="closeReader">Fechar</button></div><h2 id="songTitle"></h2><p class="muted" id="songArtist"></p><div class="row"><button id="minus">− Tom</button><button id="plus">+ Tom</button><button id="smaller">A−</button><button id="bigger">A+</button><button id="scroll">▶ Rolar</button><button id="fav">☆ Favoritar</button><button id="addSet">+ Repertório</button><button id="print">Imprimir</button></div><p class="muted" id="songKey"></p><div id="sheet" class="sheet" aria-label="Cifra"></div></section></section>
-<section class="screen" id="biblioteca" hidden><h1>Minha biblioteca</h1><p class="muted">Favoritos ficam salvos neste navegador.</p><div id="favList" class="grid"></div></section>
-<section class="screen" id="repertorios" hidden><h1>Meus repertórios</h1><p class="muted">Organize músicas para ensaios e apresentações.</p><form id="newSet" class="row"><input id="setName" placeholder="Nome do repertório" aria-label="Nome do repertório" required maxlength="60"><button class="primary">Criar</button></form><div id="setList" class="grid" style="margin-top:20px"></div></section>
-<section class="screen" id="ferramentas" hidden><h1>Ferramentas musicais</h1><div class="grid"><article class="panel"><h2>Metrônomo</h2><label for="bpm">BPM: <output id="bpmValue">100</output></label><input id="bpm" type="range" min="40" max="220" value="100"><div id="beat" class="meter" aria-live="off">♩</div><button id="metro" class="primary">Iniciar metrônomo</button></article><article class="panel"><h2>Afinador de referência</h2><p class="muted">Reproduza a nota de referência e afine de ouvido. Não utiliza microfone.</p><label for="note">Nota</label><select id="note"><option value="82.41">E2 (Mi grave)</option><option value="110">A2 (Lá)</option><option value="146.83">D3 (Ré)</option><option value="196">G3 (Sol)</option><option value="246.94">B3 (Si)</option><option value="329.63">E4 (Mi agudo)</option></select><button id="tone" class="primary">Ouvir nota</button></article><article class="panel"><h2>Dicionário de acordes</h2><p class="muted">Posições básicas para violão (da sexta à primeira corda; X = não tocar).</p><select id="chordSelect" aria-label="Selecionar acorde"><option>C</option><option>D</option><option>E</option><option>Em</option><option>F</option><option>G</option><option>A</option><option>Am</option><option>Dm</option></select><p id="chordFingering" class="stat"></p></article></div></section>
-<section class="screen" id="contribuir" hidden><h1>Adicionar minha cifra</h1><p class="notice">Adicione apenas material autoral ou para o qual tenha autorização. Seus dados ficam armazenados neste navegador, não são enviados para um servidor.</p><form id="contribute"><label for="newTitle">Título</label><input id="newTitle" required maxlength="100"><label for="newArtist">Artista</label><input id="newArtist" required maxlength="100"><label for="newKey">Tom</label><select id="newKey"><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>A</option><option>B</option><option>Am</option><option>Em</option></select><label for="newBody">Cifra (linhas de acordes e letra)</label><textarea id="newBody" required maxlength="25000" placeholder="C G Am F&#10;Sua composição..."></textarea><p><button class="primary">Salvar minha cifra</button></p></form><p id="contributeStatus" role="status"></p></section>
-<footer>Sonora • Cifras autorais e ferramentas para músicos • <span id="storageStatus">Dados locais</span></footer></main>
-<script type="module">
-import {transposeChord,transposeText,searchTracks,safeParseFavorites,safeJson,normalizeTrack,escapeHtml} from './src/core.mjs';
-const demos=[{id:'amanhecer',title:'Quando Amanhecer',artist:'Sonora Demo',key:'G',tags:['pop','violão'],body:'G                 D\nQuando o dia amanhecer\nEm                  C\nVou ouvir uma canção\nG                 D\nCom um novo horizonte\nC                G\nE o som no coração',origin:'demo'},{id:'caminho',title:'Meu Caminho',artist:'Sonora Demo',key:'C',tags:['acústico'],body:'C                Am\nHoje eu vou recomeçar\nF                  G\nCom coragem para seguir\nC                 Am\nUma história para contar\nF                 G\nE mil sonhos por cumprir',origin:'demo'}];
-const $=id=>document.getElementById(id);let audio=null,metroTimer=null,scrollTimer=null,current=null,shift=0,fontSize=18;
-function read(key,fallback){try{return safeJson(localStorage.getItem('sonora:'+key),fallback)}catch{return fallback}}
-function write(key,value){try{localStorage.setItem('sonora:'+key,JSON.stringify(value));return true}catch{$('storageStatus').textContent='Armazenamento indisponível';return false}}
-function songs(){const user=read('songs',[]);return [...demos,...(Array.isArray(user)?user.filter(t=>t&&typeof t.id==='string'&&typeof t.title==='string'&&typeof t.body==='string'):[])]}
-function favs(){return safeParseFavorites(JSON.stringify(read('favs',[])))}
-function sets(){const v=read('sets',[]);return Array.isArray(v)?v:[]}
-function stopScroll(){if(scrollTimer){clearInterval(scrollTimer);scrollTimer=null}$('scroll').textContent='▶ Rolar'}
-function navigate(page){for(const el of document.querySelectorAll('.screen'))el.hidden=el.id!==page;for(const b of document.querySelectorAll('[data-page]'))b.classList.toggle('active',b.dataset.page===page);stopScroll();if(page==='biblioteca')renderFavs();if(page==='repertorios')renderSets();window.scrollTo({top:0,behavior:'instant'})}
-for(const b of document.querySelectorAll('[data-page]'))b.onclick=()=>navigate(b.dataset.page);
-function makeCard(t){const c=document.createElement('article');c.className='card';const title=document.createElement('h3');title.textContent=t.title;const artist=document.createElement('p');artist.className='muted';artist.textContent=t.artist+' • '+t.key;const tag=document.createElement('span');tag.className='chip';tag.textContent=t.origin==='user'?'Minha cifra':'Demo autoral';const open=document.createElement('button');open.className='primary';open.textContent='Abrir cifra';open.onclick=()=>openSong(t.id);c.append(tag,title,artist,open);return c}
-function renderCatalog(q=''){const results=searchTracks(songs(),q);$('catalog').replaceChildren(...results.map(makeCard));$('count').textContent=results.length+' cifra(s)';if(!results.length){const p=document.createElement('p');p.textContent='Nada encontrado no catálogo local. Experimente a busca externa.';$('catalog').append(p)}}
-function openSong(id){const t=songs().find(x=>x.id===id);if(!t)return;current=id;shift=0;navigate('inicio');$('reader').hidden=false;draw();$('reader').scrollIntoView({behavior:'smooth'})}
-function draw(){const t=songs().find(x=>x.id===current);if(!t)return;$('songTitle').textContent=t.title;$('songArtist').textContent=t.artist;$('songKey').textContent='Tom: '+transposeChord(t.key,shift);$('sheet').textContent=transposeText(t.body,shift);$('sheet').style.fontSize=fontSize+'px';$('fav').textContent=favs().includes(current)?'★ Favoritado':'☆ Favoritar'}
-$('plus').onclick=()=>{shift++;draw()};$('minus').onclick=()=>{shift--;draw()};$('bigger').onclick=()=>{fontSize=Math.min(34,fontSize+2);draw()};$('smaller').onclick=()=>{fontSize=Math.max(12,fontSize-2);draw()};$('closeReader').onclick=()=>{stopScroll();$('reader').hidden=true};$('print').onclick=()=>window.print();
-$('scroll').onclick=()=>{if(scrollTimer){stopScroll();return}scrollTimer=setInterval(()=>window.scrollBy(0,1),40);$('scroll').textContent='Ⅱ Pausar'};
-$('fav').onclick=()=>{const f=favs();write('favs',f.includes(current)?f.filter(x=>x!==current):[...f,current]);draw()};
-function renderFavs(){const items=songs().filter(t=>favs().includes(t.id));$('favList').replaceChildren(...items.map(makeCard));if(!items.length)$('favList').textContent='Nenhuma música favoritada.'}
-function renderSets(){const list=$('setList');list.replaceChildren(...sets().map(s=>{const c=document.createElement('article');c.className='card';const h=document.createElement('h3');h.textContent=s.name;const p=document.createElement('p');p.className='muted';p.textContent=s.ids.length+' música(s)';c.append(h,p);for(const id of s.ids){const t=songs().find(x=>x.id===id);if(!t)continue;const b=document.createElement('button');b.textContent=t.title;b.onclick=()=>openSong(id);c.append(b)}const del=document.createElement('button');del.textContent='Excluir repertório';del.onclick=()=>{if(confirm('Excluir este repertório?')){write('sets',sets().filter(x=>x.id!==s.id));renderSets()}};c.append(del);return c}));if(!sets().length)list.textContent='Nenhum repertório criado.'}
-$('newSet').onsubmit=e=>{e.preventDefault();const name=$('setName').value.trim();if(!name)return;write('sets',[...sets(),{id:'set-'+Date.now(),name:name.slice(0,60),ids:[]}]);$('newSet').reset();renderSets()};
-$('addSet').onclick=()=>{const list=sets();if(!list.length){alert('Crie um repertório na aba Repertórios primeiro.');return}const answer=prompt('Em qual repertório?\n'+list.map((s,i)=>(i+1)+'. '+s.name).join('\n'));if(answer===null)return;const idx=Number(answer)-1;if(!Number.isInteger(idx)||!list[idx]){alert('Número inválido');return}if(!list[idx].ids.includes(current))list[idx].ids.push(current);write('sets',list);alert('Música adicionada ao repertório.')};
-function externalSearch(){const q=$('query').value.trim();if(!q){$('query').focus();return}window.open('https://www.google.com/search?q='+encodeURIComponent(q+' cifra site:cifraclub.com.br OR site:ultimate-guitar.com'),'_blank','noopener,noreferrer')}
-$('external').onclick=externalSearch;$('searchForm').onsubmit=e=>{e.preventDefault();renderCatalog($('query').value.trim())};$('query').oninput=()=>renderCatalog($('query').value.trim());
-$('contribute').onsubmit=e=>{e.preventDefault();try{const t=normalizeTrack({title:$('newTitle').value,artist:$('newArtist').value,key:$('newKey').value,body:$('newBody').value});if(!write('songs',[...songs().filter(x=>x.origin==='user'),t]))throw Error('Não foi possível salvar neste navegador');$('contributeStatus').textContent='Cifra salva com sucesso.';$('contribute').reset();renderCatalog()}catch(err){$('contributeStatus').textContent=err.message}};
-const fingerings={C:'X 3 2 0 1 0',D:'X X 0 2 3 2',E:'0 2 2 1 0 0',Em:'0 2 2 0 0 0',F:'1 3 3 2 1 1',G:'3 2 0 0 0 3',A:'X 0 2 2 2 0',Am:'X 0 2 2 1 0',Dm:'X X 0 2 3 1'};function chord(){ $('chordFingering').textContent=fingerings[$('chordSelect').value] }$('chordSelect').onchange=chord;chord();
-function ctx(){if(!audio)audio=new (window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();return audio}
-function beep(frequency,duration=.08){const a=ctx(),o=a.createOscillator(),g=a.createGain();o.frequency.value=frequency;o.type='sine';g.gain.setValueAtTime(.13,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+duration);o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+duration)}
-$('bpm').oninput=()=>{$('bpmValue').textContent=$('bpm').value;if(metroTimer){clearInterval(metroTimer);metroTimer=setInterval(tick,60000/Number($('bpm').value))}};
-let beat=0;function tick(){beep(beat%4===0?880:660);beat++;$('beat').classList.toggle('on',beat%2===0)}
-$('metro').onclick=()=>{if(metroTimer){clearInterval(metroTimer);metroTimer=null;$('metro').textContent='Iniciar metrônomo';$('beat').classList.remove('on');return}beat=0;tick();metroTimer=setInterval(tick,60000/Number($('bpm').value));$('metro').textContent='Parar metrônomo'};
-$('tone').onclick=()=>{beep(Number($('note').value),1.8)};
-renderCatalog();if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-</script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0f15">
+  <meta name="description" content="Sonora — suas cifras, repertórios e um lugar para tocar mais.">
+  <title>Sonora — Seu som, seu ritmo.</title>
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./src/app.mjs"></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Navegação lateral">
+      <a class="brand" href="#inicio" aria-label="Sonora — início"><span class="brand-mark">♪</span><span>sonora<span class="brand-dot">.</span></span></a>
+      <div class="side-group-label">MENU</div>
+      <nav class="side-nav" aria-label="Principal">
+        <a href="#inicio" data-nav="inicio"><span class="nav-icon">⌂</span> Início</a>
+        <a href="#descobrir" data-nav="descobrir"><span class="nav-icon">⌕</span> Explorar cifras</a>
+        <a href="#favoritos" data-nav="favoritos"><span class="nav-icon">♡</span> Favoritos</a>
+        <a href="#repertorios" data-nav="repertorios"><span class="nav-icon">▤</span> Repertórios</a>
+      </nav>
+      <div class="side-group-label side-second">SUA MÚSICA</div>
+      <nav class="side-nav" aria-label="Pessoal">
+        <a href="#minhas" data-nav="minhas"><span class="nav-icon">♫</span> Minhas cifras</a>
+      </nav>
+      <div class="side-promo"><div class="promo-icon">✦</div><strong>Seu palco começa aqui.</strong><p>Monte um repertório e leve suas músicas sempre com você.</p><a href="#repertorios">Criar repertório <span aria-hidden="true">↗</span></a></div>
+      <div class="side-footer">Feito para quem ama música.<br><small>Sonora • versão inicial</small></div>
+    </aside>
+    <div class="content-column">
+      <header class="topbar">
+        <a class="mobile-brand" href="#inicio"><span class="brand-mark">♪</span> sonora<span class="brand-dot">.</span></a>
+        <form id="global-search" class="global-search" role="search"><span aria-hidden="true">⌕</span><input id="search-input" name="q" aria-label="Buscar música ou artista" placeholder="Busque uma música, artista ou acorde..." autocomplete="off"><kbd>/</kbd></form>
+        <div class="top-actions"><span class="demo-label">CATÁLOGO DEMO</span><button class="btn btn-accent btn-small" id="new-song" type="button">＋ <span>Nova cifra</span></button></div>
+      </header>
+      <main id="app" tabindex="-1"></main>
+      <footer class="main-footer"><span>© Sonora • O lugar onde a música acontece.</span><span>Cifras demonstrativas autorais · Seus dados ficam neste navegador.</span></footer>
+    </div>
+  </div>
+  <nav class="mobile-nav" aria-label="Navegação mobile">
+    <a href="#inicio" data-nav="inicio"><span>⌂</span>Início</a>
+    <a href="#descobrir" data-nav="descobrir"><span>⌕</span>Explorar</a>
+    <a href="#favoritos" data-nav="favoritos"><span>♡</span>Salvos</a>
+    <a href="#repertorios" data-nav="repertorios"><span>▤</span>Listas</a>
+  </nav>
+  <dialog id="song-dialog" aria-labelledby="song-dialog-title">
+    <form id="song-form" class="modal-form">
+      <div class="modal-heading"><div><small class="eyebrow">SUA CRIAÇÃO</small><h2 id="song-dialog-title">Adicionar cifra</h2></div><button type="button" class="icon-button" data-close="song-dialog" aria-label="Fechar">×</button></div>
+      <p class="muted">Cadastre composições próprias ou conteúdo que você tem direito de utilizar. Os dados ficam salvos somente neste dispositivo.</p>
+      <label for="song-title">Nome da música</label><input name="title" id="song-title" maxlength="90" required placeholder="Ex.: Minha primeira canção">
+      <label for="song-artist">Artista / compositor</label><input name="artist" id="song-artist" maxlength="90" required placeholder="Ex.: Seu nome">
+      <div class="two-inputs"><div><label for="song-genre">Estilo</label><select name="genre" id="song-genre"><option>Pop</option><option>MPB</option><option>Rock</option><option>Sertanejo</option><option>Gospel</option><option>Outros</option></select></div><div><label for="song-key">Tom original</label><select name="key" id="song-key"><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>A</option><option>B</option><option>Am</option><option>Bm</option><option>Em</option><option>F#m</option></select></div></div>
+      <label for="song-body">Letra e acordes</label><textarea id="song-body" name="body" rows="8" maxlength="12000" required placeholder="[C]Sua letra começa aqui&#10;[G]E continua na outra linha"></textarea>
+      <p class="hint">Coloque os acordes entre colchetes, como [C], [Am] e [G7].</p>
+      <div class="modal-actions"><button type="button" class="btn btn-outline" data-close="song-dialog">Cancelar</button><button class="btn btn-accent" type="submit">Salvar cifra</button></div>
+    </form>
+  </dialog>
+  <dialog id="list-dialog" aria-labelledby="list-title">
+    <form id="list-form" class="modal-form">
+      <div class="modal-heading"><div><small class="eyebrow">ORGANIZE SEU SOM</small><h2 id="list-title">Novo repertório</h2></div><button type="button" class="icon-button" data-close="list-dialog" aria-label="Fechar">×</button></div>
+      <label for="list-name">Nome do repertório</label><input name="name" id="list-name" maxlength="60" required placeholder="Ex.: Ensaio de sábado">
+      <div class="modal-actions"><button type="button" class="btn btn-outline" data-close="list-dialog">Cancelar</button><button class="btn btn-accent" type="submit">Criar repertório</button></div>
+    </form>
+  </dialog>
+  <dialog id="add-dialog" aria-labelledby="add-title">
+    <form id="add-form" class="modal-form">
+      <div class="modal-heading"><div><small class="eyebrow">SEU REPERTÓRIO</small><h2 id="add-title">Adicionar música</h2></div><button type="button" class="icon-button" data-close="add-dialog" aria-label="Fechar">×</button></div>
+      <input type="hidden" id="song-to-add" name="song">
+      <label for="target-list">Escolha o repertório</label><select id="target-list" name="list" required></select>
+      <div class="modal-actions"><button type="button" class="btn btn-outline" data-close="add-dialog">Cancelar</button><button class="btn btn-accent" type="submit">Adicionar</button></div>
+    </form>
+  </dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
