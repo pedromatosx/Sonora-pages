@@ -27,7 +27,7 @@ jobs:
         run: |
           mkdir -p _site/src
           cp index.html styles.css icon.svg _site/
-          cp src/app.mjs src/music.mjs src/catalog.mjs _site/src/
+          cp src/app.mjs src/music.mjs src/catalog.mjs src/practice.mjs _site/src/
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
